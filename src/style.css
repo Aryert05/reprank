@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ink-950 text-mist-100 font-body antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-wide;
+  }
+  ::selection {
+    @apply bg-volt/30 text-mist-100;
+  }
+  /* Visible keyboard focus everywhere — buttons, links, inputs */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid theme('colors.volt.DEFAULT');
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* ---------- Buttons ---------- */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-volt px-6 py-3
+           font-semibold text-ink-950 shadow-[0_8px_20px_-8px_rgba(255,122,26,0.6)]
+           transition-all duration-150 hover:bg-volt-400 hover:-translate-y-0.5
+           active:translate-y-0 active:bg-volt-600;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-ink-600
+           bg-transparent px-6 py-3 font-semibold text-mist-100 transition-all duration-150
+           hover:border-volt hover:text-volt active:bg-ink-800;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm
+           font-medium text-mist-300 transition-colors hover:text-mist-100;
+  }
+
+  /* ---------- Surfaces ---------- */
+  .card {
+    @apply rounded-2xl border border-ink-700 bg-ink-900 p-6 shadow-card;
+  }
+  .card-hover {
+    @apply transition-all duration-150 hover:border-ink-600 hover:-translate-y-0.5;
+  }
+
+  /* ---------- Data / badges ---------- */
+  .stat-value {
+    @apply font-mono text-3xl font-semibold text-mist-100;
+  }
+  .stat-label {
+    @apply text-xs font-medium uppercase tracking-widest text-mist-400;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-ink-600 bg-ink-800
+           px-3 py-1 font-mono text-xs uppercase tracking-wide text-mist-300;
+  }
+  .badge-xp {
+    @apply border-volt/30 bg-volt/10 text-volt-400;
+  }
+  .badge-achievement {
+    @apply border-surge/30 bg-surge/10 text-surge-400;
+  }
+
+  /* ---------- Progress ---------- */
+  .progress-track {
+    @apply h-2 w-full overflow-hidden rounded-full bg-ink-700;
+  }
+  .progress-fill {
+    @apply h-full rounded-full bg-volt transition-[width] duration-700 ease-out;
+  }
+
+  /* ---------- Form fields ---------- */
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-mist-300;
+  }
+  .field-input {
+    @apply w-full rounded-xl border border-ink-600 bg-ink-800 px-4 py-3 text-mist-100
+           placeholder:text-mist-400 transition-colors focus:border-volt;
+  }
+
+  /* ---------- Signature element: Rank Ring ---------- */
+  /* A circular XP-progress ring with the level number at its center.
+     Built with a conic-gradient (no inline SVG needed per instance) —
+     this is the one recurring visual motif tying nav, dashboard and profile together. */
+  .rank-ring {
+    @apply relative grid place-items-center rounded-full;
+    background: conic-gradient(theme('colors.volt.DEFAULT') calc(var(--pct, 0) * 1%), theme('colors.ink.700') 0);
+  }
+  .rank-ring::before {
+    content: '';
+    @apply absolute rounded-full bg-ink-900;
+    inset: 4px;
+  }
+  .rank-ring-label {
+    @apply relative z-10 font-mono font-semibold leading-none text-mist-100;
+  }
+}

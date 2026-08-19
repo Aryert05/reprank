@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Challenges — RepRank</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="min-h-screen bg-ink-950">
+  <div id="navbar-mount"></div>
+
+  <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="max-w-xl">
+      <p class="stat-label">Active challenges</p>
+      <h1 class="mt-1 text-3xl font-semibold text-mist-100">Pick a fight worth winning</h1>
+      <p class="mt-2 text-mist-400">Join a challenge, log the work, and watch your rank move.</p>
+    </div>
+
+    <div id="challenge-grid" class="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+      <!-- Challenge cards are rendered by src/pages/challenges.js from static demo data -->
+    </div>
+  </main>
+
+  <div id="footer-mount"></div>
+
+  <script type="module" src="/src/pages/challenges.js"></script>
+</body>
+</html>

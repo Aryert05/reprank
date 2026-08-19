@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workout — RepRank</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="min-h-screen bg-ink-950">
+  <div id="navbar-mount"></div>
+
+  <main class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="stat-label">Today's session</p>
+        <h1 class="mt-1 text-3xl font-semibold text-mist-100">Push Day — Upper Body</h1>
+        <p class="mt-1 text-sm text-mist-400">3 exercises · est. 45–55 min</p>
+      </div>
+      <span id="session-status" class="badge">Not started</span>
+    </div>
+
+    <div class="mt-6 flex flex-wrap gap-3">
+      <button id="start-workout" class="btn-primary">Start Workout</button>
+      <button id="add-exercise" class="btn-secondary">+ Add Exercise</button>
+      <button id="finish-workout" class="btn-secondary ml-auto">Finish Workout</button>
+    </div>
+
+    <!-- Exercise cards -->
+    <div id="exercise-list" class="mt-8 space-y-4">
+      <div class="card exercise-card">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold text-mist-100">Bench Press</h3>
+          <span class="badge">Chest</span>
+        </div>
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="text-mist-400">
+                <th class="pb-2 font-medium">Set</th>
+                <th class="pb-2 font-medium">Reps</th>
+                <th class="pb-2 font-medium">Weight</th>
+                <th class="pb-2 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody class="font-mono text-mist-100">
+              <tr class="border-t border-ink-700"><td class="py-2">1</td><td>8</td><td>60 kg</td><td><span class="set-check text-mist-400">○</span></td></tr>
+              <tr class="border-t border-ink-700"><td class="py-2">2</td><td>8</td><td>60 kg</td><td><span class="set-check text-mist-400">○</span></td></tr>
+              <tr class="border-t border-ink-700"><td class="py-2">3</td><td>8</td><td>62.5 kg</td><td><span class="set-check text-volt">●</span></td></tr>
+              <tr class="border-t border-ink-700"><td class="py-2">4</td><td>6</td><td>65 kg</td><td><span class="set-check text-mist-400">○</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card exercise-card">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold text-mist-100">Overhead Press</h3>
+          <span class="badge">Shoulders</span>
+        </div>
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="text-mist-400">
+                <th class="pb-2 font-medium">Set</th>
+                <th class="pb-2 font-medium">Reps</th>
+                <th class="pb-2 font-medium">Weight</th>
+                <th class="pb-2 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody class="font-mono text-mist-100">
+              <tr class="border-t border-ink-700"><td class="py-2">1</td><td>10</td><td>30 kg</td><td><span class="set-check text-mist-400">○</span></td></tr>
+              <tr class="border-t border-ink-700"><td class="py-2">2</td><td>10</td><td>32 kg</td><td><span class="set-check text-mist-400">○</span></td></tr>
+              <tr class="border-t border-ink-700"><td class="py-2">3</td><td>8</td><td>32 kg</td><td><span class="set-check text-mist-400">○</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card exercise-card">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold text-mist-100">Triceps Pushdown</h3>
+          <span class="badge">Arms</span>
+        </div>
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="text-mist-400">
+                <th class="pb-2 font-medium">Set</th>
+                <th class="pb-2 font-medium">Reps</th>
+                <th class="pb-2 font-medium">Weight</th>
+                <th class="pb-2 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody class="font-mono text-mist-100">
+              <tr class="border-t border-ink-700"><td class="py-2">1</td><td>12</td><td>25 kg</td><td><span class="set-check text-mist-400">○</span></td></tr>
+              <tr class="border-t border-ink-700"><td class="py-2">2</td><td>12</td><td>25 kg</td><td><span class="set-check text-mist-400">○</span></td></tr>
+              <tr class="border-t border-ink-700"><td class="py-2">3</td><td>10</td><td>27.5 kg</td><td><span class="set-check text-mist-400">○</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="footer-mount"></div>
+
+  <script type="module" src="/src/pages/workout.js"></script>
+</body>
+</html>
