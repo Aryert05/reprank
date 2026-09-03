@@ -7,52 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body class="min-h-screen bg-ink-950">
-  <div id="navbar-mount"></div>
-
-  <main class="mx-auto flex min-h-[calc(100vh-64px)] max-w-md flex-col justify-center px-4 py-16 sm:px-6">
-    <div class="mb-8 text-center">
-      <span class="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-volt font-display text-xl font-bold text-ink-950">R</span>
-      <h1 class="mt-4 text-2xl font-semibold text-mist-100">Welcome back</h1>
-      <p class="mt-1 text-sm text-mist-400">Log in to keep your streak alive.</p>
-    </div>
-
-    <form id="login-form" class="card space-y-5" novalidate>
-      <div>
-        <label for="email" class="field-label">Email</label>
-        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" class="field-input" required />
-      </div>
-
-      <div>
-        <div class="flex items-center justify-between">
-          <label for="password" class="field-label">Password</label>
-          <a href="#" id="forgot-link" class="text-xs font-medium text-volt hover:text-volt-400">Forgot password?</a>
-        </div>
-        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" class="field-input" required />
-      </div>
-
-      <div class="flex items-center gap-2">
-        <input id="remember" type="checkbox" class="h-4 w-4 rounded border-ink-600 bg-ink-800 text-volt focus:ring-volt" />
-        <label for="remember" class="text-sm text-mist-300">Keep me logged in</label>
-      </div>
-
-      <button type="submit" class="btn-primary w-full">Log in</button>
-
-      <p class="text-center text-sm text-mist-400">
-        Don't have an account?
-        <a href="/register.html" class="font-medium text-volt hover:text-volt-400">Register</a>
-      </p>
-    </form>
-
-    <p class="mt-6 text-center text-xs text-mist-400">
-      Experiment 1 demo — this form is frontend-only, no account is created or verified.
-    </p>
-  </main>
-
-  <div id="footer-mount"></div>
-
-  <script type="module" src="/src/pages/login.js"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/entries/login.jsx"></script>
 </body>
 </html>

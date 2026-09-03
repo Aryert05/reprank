@@ -1,9 +1,8 @@
-# RepRank — Experiment 1: Frontend UI
+# RepRank — Experiment 2: React Hooks (useEffect, useContext, Custom Hooks)
 
-Gamified workout & fitness tracking platform. This experiment builds a responsive,
-interactive **frontend only** — no backend, no database, no authentication.
-
-Stack: **Vite + vanilla JavaScript + Tailwind CSS**.
+Same project as Experiment 1 (**not** a new project) — the existing Vite + Tailwind
+multi-page site has now been converted to **React**, and demonstrates `useEffect`,
+`useContext`, and custom hooks exactly as covered in the practical.
 
 ## 1. Setup
 
@@ -12,127 +11,134 @@ npm install
 npm run dev
 ```
 
-Vite will print a local URL (usually `http://localhost:5173`). Open it in a browser.
-
-Other commands:
-
 ```bash
 npm run build     # production build into dist/
 npm run preview   # preview the production build locally
 ```
 
-## 2. Project structure
+## 2. What changed since Experiment 1
+
+- Added **React** (`react`, `react-dom`) and **`@vitejs/plugin-react`** to `package.json` /
+  `vite.config.js`. The site is still multi-page (8 `.html` files), but each page now boots
+  its own small React app instead of hand-written DOM injection.
+- Every page's markup moved from a `.html` template + vanilla `.js` file into a `.jsx`
+  **page component** under `src/pages/`.
+- Each `.html` file was simplified to a single `<div id="root"></div>` + one
+  `<script type="module" src="/src/entries/*.jsx">`.
+- The old `navbar-mount` / `footer-mount` DOM injection was replaced by a `<Layout>`
+  component that renders `<NavbarMarketing>` / `<NavbarApp>` + `{children}` + `<Footer>`.
+
+## 3. Project structure
 
 ```text
 reprank/
-├── index.html            # Home page
-├── login.html            # Login page (UI only)
-├── register.html         # Register page (UI only)
-├── dashboard.html         # Dashboard with stats, streak, challenge, leaderboard preview
-├── workout.html            # Workout logging screen
-├── challenges.html         # Challenge cards
-├── leaderboard.html         # Full leaderboard
-├── profile.html             # User profile
+├── index.html, login.html, register.html, dashboard.html,
+│   workout.html, challenges.html, leaderboard.html, profile.html
+│   (each is now just <div id="root"></div> + a script tag)
 │
-├── package.json
-├── vite.config.js         # multi-page build config (lists every .html entry)
-├── tailwind.config.js     # design tokens: colors, fonts
-├── postcss.config.js      # required to run Tailwind
+├── vite.config.js       # adds the React plugin, keeps the multi-page entry map
+├── tailwind.config.js   # content globs now include .jsx
 │
 ├── src/
-│   ├── style.css           # Tailwind layers + reusable component classes (.btn-primary, .card, ...)
+│   ├── style.css                 # unchanged design system from Experiment 1
+│   ├── context/
+│   │   └── UserContext.jsx        # useContext — shared user data (PART E/F)
+│   ├── hooks/
+│   │   ├── useDocumentTitle.js     # Custom Hook — wraps useEffect (title on load)
+│   │   ├── useFetch.js             # Custom Hook — wraps useEffect (data fetching)
+│   │   ├── useForm.js              # Custom Hook — reusable form-field handling
+│   │   └── useToast.js             # Custom Hook — reusable notification logic
+│   ├── data/
+│   │   └── mockApi.js              # simulated async "API calls" (setTimeout + Promise)
 │   ├── components/
-│   │   ├── navbar.js       # renders the marketing nav and the app nav, shared across pages
-│   │   ├── footer.js       # renders the shared footer
-│   │   └── toast.js        # small "toast" popup used to confirm demo/non-functional actions
-│   └── pages/
-│       ├── home.js         # one entry script per HTML page — injects navbar/footer,
-│       ├── login.js        #   wires up that page's demo interactions
-│       ├── register.js
-│       ├── dashboard.js
-│       ├── workout.js
-│       ├── challenges.js
-│       ├── leaderboard.js
-│       └── profile.js
+│   │   ├── Layout.jsx               # picks NavbarMarketing/NavbarApp + Footer
+│   │   ├── NavbarMarketing.jsx, NavbarApp.jsx, Footer.jsx
+│   │   ├── RankRing.jsx              # signature XP-ring, now a real component
+│   │   └── ToastViewport.jsx         # renders toasts from useToast
+│   ├── pages/
+│   │   ├── Home.jsx, Login.jsx, Register.jsx, Dashboard.jsx,
+│   │   └── Workout.jsx, Challenges.jsx, Leaderboard.jsx, Profile.jsx
+│   └── entries/
+│       └── one file per page — mounts <UserProvider><Page /></UserProvider> into #root
 │
-└── public/                 # static assets (empty for now)
+└── public/
 ```
 
-### Why one JS file per page instead of a single `main.js`?
+## 4. The three hooks, mapped onto RepRank
 
-Because this is a **multi-page site** (8 separate `.html` files, not a single-page app),
-each page needs its own Vite entry `<script type="module">`. Rather than duplicate the
-navbar/footer markup in all 8 HTML files, each page's script imports the same
-`components/navbar.js` and `components/footer.js` and injects them into a
-`<div id="navbar-mount">` / `<div id="footer-mount">` placeholder. This keeps the HTML
-files focused on page content, avoids copy-pasted markup, and maps cleanly onto React
-components (`<Navbar />`, `<Footer />`) in Experiment 2 — each `pages/*.js` file is close
-to what a React page component will look like.
+### `useEffect()` — side effects
+- **`Dashboard.jsx`** runs `useEffect(() => console.log('Dashboard loaded'), [])` the moment
+  it mounts — the empty `[]` means "run once, on load," straight from the practical's example.
+- **`useDocumentTitle(title)`** (a custom hook, see below) wraps a `useEffect` that sets
+  `document.title` and restores it on unmount. Called on *every* page.
+- **`useFetch(fetcher, deps)`** (also a custom hook) wraps a `useEffect` that calls an async
+  function and stores `data` / `loading` / `error` — the "fetch data" example from the table.
 
-## 3. How the UI satisfies Experiment 1
+### `useContext()` — sharing data without prop drilling
+- `src/context/UserContext.jsx` creates `UserContext` and a `UserProvider` that supplies one
+  demo user object (`{ name, role, level, xp, streak, workouts, ... }`).
+- **`Dashboard.jsx`** reads it with `const user = useContext(UserContext)` — matching the
+  practical's exact pattern — and renders `Welcome, {user.name}` / `Role: {user.role}`.
+- **`NavbarApp.jsx`**, **`Profile.jsx`**, and **`Leaderboard.jsx`** all read the same context
+  (via a small `useUser()` wrapper hook) with **zero props** passed down through `Layout` —
+  that's the prop-drilling `useContext` avoids.
+- Adapted to RepRank's problem statement (PART F): instead of an e-commerce `cartItems`
+  example, the shared data is fitness-specific — `level`, `xp`, `streak`, `workouts`.
 
-- Built with **Vite + Tailwind CSS**, as required — no React, Redux, or backend.
-- All 8 required screens exist: Home, Login, Register, Dashboard, Workout, Challenges,
-  Leaderboard, Profile.
-- Every screen uses **static/demo data** (e.g. Level 12, 820/1000 XP, 14-day streak,
-  32 workouts, "1000 Push-Up Challenge" at 780/1000, the sample leaderboard). Nothing is
-  read from or written to a server.
-- Buttons like Login, Register, Join Challenge, Start/Finish Workout, and Edit Profile are
-  **visual/demo interactions only** — they toggle local UI state (a button label, a badge,
-  a toast message) and never call an API.
-- The layout is responsive: the navbar collapses into a mobile menu, dashboard stats move
-  from a 4-column grid to a 2-column grid on small screens, and cards stack vertically on
-  mobile using Tailwind's `sm:` / `lg:` responsive utilities.
+### Custom Hooks — reusing logic
+| Hook | Reuses | Used in |
+|---|---|---|
+| `useDocumentTitle(title)` | the "set title on load" `useEffect` | every page |
+| `useFetch(fetcher, deps)` | the "loading/data/error" fetch pattern | Dashboard, Challenges, Leaderboard, Workout |
+| `useForm(initialValues)` | controlled-input form state | Login, Register |
+| `useToast()` | "demo action confirmed" notification state | Login, Register, Workout, Challenges, Profile |
 
-## 4. Design system (for the viva)
+Each one is a plain function starting with `use`, and each calls other hooks internally
+(`useState`, `useEffect`) — exactly the definition from PART G.
 
-- **Colors**: a dark ink-blue background (`ink-950` → `ink-700`) with one strong accent,
-  `volt` (a warm orange), used consistently for primary buttons, XP, and progress bars.
-  A second accent, `surge` (violet), is reserved only for achievement badges so it doesn't
-  compete with the XP color.
-- **Type**: `Oswald` for headings (a condensed, athletic display face), `Inter` for body
-  text, and `JetBrains Mono` for numbers/stats (XP, reps, weights) — mono type makes stats
-  read like a scoreboard.
-- **Signature element — the "Rank Ring"**: a circular XP-progress ring built with a CSS
-  `conic-gradient` (see `.rank-ring` in `src/style.css`) that shows the user's level in the
-  center. It appears at three sizes: small in the navbar, large on the dashboard, and large
-  on the profile page — one visual motif tying the whole app together.
+## 5. Data fetching (still no real backend)
 
-## 5. Features implemented in Experiment 1
+`src/data/mockApi.js` exports functions like `fetchDashboardExtras()` and
+`fetchLeaderboard()` that return a `Promise` resolved after a short `setTimeout` — standing
+in for a real `fetch('/api/...')` call. `useFetch` consumes them, so Dashboard, Challenges,
+Leaderboard, and Workout all show a brief skeleton/loading state before the demo data
+appears, which is what "Implement forms, data fetching, and reusable custom hooks" asks for.
 
-- Responsive marketing homepage (hero, features grid, CTA)
-- Login and Register forms with client-side-only interaction (no real auth)
-- Dashboard with XP/level/streak/workout stats, weekly progress, recent workouts, current
-  challenge, leaderboard preview, and quick actions
-- Workout page with exercise cards, sets/reps/weight tables, and demo Start / Add Exercise /
-  Finish Workout interactions (including a set-completion toggle)
-- Challenges page with joinable challenge cards and progress bars
-- Leaderboard page with a top-3 podium and a full ranked table that highlights the current user
-- Profile page with avatar placeholder, XP progress, achievements grid, and recent activity feed
-- Shared, reusable navbar (two variants) and footer components
-- Fully responsive layout (mobile, tablet, laptop, desktop) with a mobile hamburger menu
+## 6. Forms
 
-## 6. Intentionally left for later experiments
+Login and Register both use `useForm()` for controlled inputs (`values`, `handleChange`) and
+`useToast()` to confirm submission — there's still no authentication logic, per the original
+Experiment 1 scope restriction; that stays for a later experiment.
 
-- React (and migrating these pages/components into React components)
-- Redux / Context API for state management
-- Node.js + Express backend
-- MongoDB + Mongoose data models
-- REST API endpoints
-- JWT-based authentication
-- Real login/register logic, password hashing, sessions
-- WebSockets (e.g. live leaderboard updates)
-- Docker / Docker Compose
-- CI/CD (GitHub Actions) and deployment
+## 7. Features implemented in Experiment 2
 
-## 7. Short viva summary
+- Whole app converted from vanilla JS DOM manipulation to React function components
+- `useEffect` demonstrated for: on-load logging, document-title updates, and data fetching
+- `useContext` demonstrated for: sharing one user object across Navbar, Dashboard, Profile,
+  and Leaderboard without prop drilling
+- Four custom hooks (`useDocumentTitle`, `useFetch`, `useForm`, `useToast`) each reused
+  across multiple pages
+- Simulated async data fetching with loading skeletons (Dashboard, Challenges, Leaderboard,
+  Workout)
+- All Experiment 1 UI, responsiveness, and design system preserved exactly
 
-"RepRank Experiment 1 is the static frontend for a gamified fitness tracker, built with
-Vite and Tailwind CSS as a multi-page vanilla JavaScript site. Every screen — home, login,
-register, dashboard, workout, challenges, leaderboard, and profile — is complete and
-responsive, using demo data to show what the finished product will look like. Shared pieces
-like the navbar and footer are written once as JavaScript components and injected into every
-page, so the codebase stays DRY and can be migrated into React components in Experiment 2.
-There's no backend yet: buttons like Login and Join Challenge only update the UI locally and
-show a toast confirming the click, since authentication, the database, and the API are all
-scoped for later experiments."
+## 8. Still intentionally left for later experiments
+
+- Redux / global state beyond simple Context
+- React Router (pages are still separate `.html` files, each its own small React app)
+- Node.js + Express backend, MongoDB, REST API
+- JWT auth / real login-register logic
+- WebSockets, Docker, CI/CD, deployment
+
+## 9. Short viva summary
+
+"Experiment 2 takes the same RepRank frontend from Experiment 1 and converts it to React,
+using the three hooks covered in the practical. `useEffect` runs side effects like setting
+the document title and fetching dashboard data on load. `useContext`, via a `UserContext`
+provider, shares one user object — name, role, level, XP, streak — across the navbar,
+dashboard, profile, and leaderboard pages without passing it down as props through every
+component in between. And four custom hooks — `useDocumentTitle`, `useFetch`, `useForm`, and
+`useToast` — each wrap one of those patterns once and get reused across several pages instead
+of being rewritten each time. There's still no backend: `useFetch` calls a mock API module
+that returns a delayed Promise, standing in for what a real network request will look like
+once Express and MongoDB are added in a later experiment."

@@ -1,15 +1,20 @@
 {
   "name": "reprank",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
-  "description": "RepRank - Gamified Workout & Fitness Tracking Platform (Experiment 1: Frontend UI)",
+  "description": "RepRank - Gamified Workout & Fitness Tracking Platform (Experiment 2: React Hooks)",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",

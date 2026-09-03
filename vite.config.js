@@ -1,9 +1,12 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
-// RepRank is a multi-page vanilla JS site (no React yet — that's Experiment 2).
-// Vite needs every HTML page listed here so `npm run build` bundles all of them.
+// RepRank is still a multi-page site (8 separate .html files) — Experiment 2 adds
+// React to each page via the official React plugin, keeping the same multi-entry
+// build so every page ships as its own small React app instead of one big SPA.
 export default defineConfig({
+  plugins: [react()],
   build: {
     rollupOptions: {
       input: {

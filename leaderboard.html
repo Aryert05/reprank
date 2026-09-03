@@ -7,36 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body class="min-h-screen bg-ink-950">
-  <div id="navbar-mount"></div>
-
-  <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-    <div class="max-w-xl">
-      <p class="stat-label">Season 3</p>
-      <h1 class="mt-1 text-3xl font-semibold text-mist-100">Leaderboard</h1>
-      <p class="mt-2 text-mist-400">Ranked by total XP earned this season.</p>
-    </div>
-
-    <!-- Top 3 podium -->
-    <div id="podium" class="mt-8 grid grid-cols-3 gap-3 sm:gap-4"></div>
-
-    <!-- Full ranked list -->
-    <div class="card mt-6 overflow-hidden !p-0">
-      <div class="hidden grid-cols-[3rem_1fr_6rem_6rem_7rem] gap-2 border-b border-ink-700 px-6 py-3 text-xs font-medium uppercase tracking-widest text-mist-400 sm:grid">
-        <span>Rank</span>
-        <span>User</span>
-        <span class="text-right">XP</span>
-        <span class="text-right">Workouts</span>
-        <span class="text-right">Challenge Pts</span>
-      </div>
-      <div id="leaderboard-list" class="divide-y divide-ink-700"></div>
-    </div>
-  </main>
-
-  <div id="footer-mount"></div>
-
-  <script type="module" src="/src/pages/leaderboard.js"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/entries/leaderboard.jsx"></script>
 </body>
 </html>
