@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useUser } from '../context/UserContext.jsx';
+import { useWorkout } from '../hooks/useWorkout.js';
 import RankRing from './RankRing.jsx';
 
 const LINKS = [
@@ -29,6 +30,8 @@ export default function NavbarApp({ active = '' }) {
   // Pulled straight from context instead of being passed down as props —
   // this is the "adapt useContext() to their project" step from the practical.
   const user = useUser();
+  // Experiment 3: read global workout state from WorkoutContext
+  const { workoutState } = useWorkout();
   const pct = Math.round((user.xp / user.xpToNext) * 100);
 
   return (
@@ -48,6 +51,11 @@ export default function NavbarApp({ active = '' }) {
         </div>
 
         <a href="/profile.html" className="hidden items-center gap-3 md:flex" title="View profile">
+          {/* Experiment 3: workout progress indicator — updates automatically via Context */}
+          <div className="flex items-center gap-2 rounded-lg border border-ink-600 bg-ink-900 px-3 py-1.5 text-xs">
+            <span className="font-mono text-volt-400">{workoutState.completedSets}</span>
+            <span className="text-mist-400">sets</span>
+          </div>
           <span className="text-right leading-tight">
             <span className="block text-sm font-semibold text-mist-100">{user.name}</span>
             <span className="block text-xs font-mono text-volt-400">Level {user.level}</span>
@@ -85,6 +93,11 @@ export default function NavbarApp({ active = '' }) {
               <RankRing level={user.level} pct={pct} size="h-9 w-9" labelSize="text-xs" />
               <span className="text-sm font-medium text-mist-100">{user.name} · Profile</span>
             </a>
+            {/* Experiment 3: workout progress indicator in mobile nav */}
+            <div className="mt-2 flex items-center gap-3 rounded-lg px-3 py-2 text-xs">
+              <span className="text-mist-400">Sets completed:</span>
+              <span className="font-mono text-volt-400">{workoutState.completedSets}</span>
+            </div>
           </div>
         </div>
       )}

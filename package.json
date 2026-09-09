@@ -1,9 +1,9 @@
 {
   "name": "reprank",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
-  "description": "RepRank - Gamified Workout & Fitness Tracking Platform (Experiment 2: React Hooks)",
+  "description": "RepRank - Gamified Workout & Fitness Tracking Platform (Experiment 3: Global State Management)",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

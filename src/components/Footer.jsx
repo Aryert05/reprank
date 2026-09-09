@@ -34,7 +34,7 @@ export default function Footer() {
           <div>
             <h4 className="stat-label mb-3">Project</h4>
             <ul className="space-y-2 text-sm text-mist-400">
-              <li className="text-mist-400">Experiment 2 — React Hooks</li>
+              <li className="text-mist-400">Experiment 3 — Global State (Context API)</li>
               <li className="text-mist-400">Vite + React + Tailwind CSS</li>
             </ul>
           </div>
@@ -42,7 +42,7 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-ink-700 pt-6 sm:flex-row">
           <p className="text-xs text-mist-400">© {year} RepRank. Built as a college practical project.</p>
-          <span className="badge">v0.2 · Experiment 2</span>
+          <span className="badge">v0.3 · Experiment 3</span>
         </div>
       </div>
     </footer>

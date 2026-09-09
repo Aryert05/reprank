@@ -69,7 +69,7 @@ export default function Register() {
         </form>
 
         <p className="mt-6 text-center text-xs text-mist-400">
-          Experiment 2 demo — this form uses a custom useForm hook, but there's still no backend.
+          Experiment 3 demo — this form uses a custom useForm hook, but there's still no backend.
         </p>
       </main>
 

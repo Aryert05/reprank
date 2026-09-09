@@ -4,11 +4,15 @@ import ToastViewport from '../components/ToastViewport.jsx';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { useFetch } from '../hooks/useFetch.js';
 import { useToast } from '../hooks/useToast.js';
+import { useWorkout } from '../hooks/useWorkout.js';
 import { fetchWorkoutPlan, EXTRA_EXERCISE_POOL } from '../data/mockApi.js';
 
 export default function Workout() {
   useDocumentTitle("Workout — RepRank");
   const { toasts, showToast } = useToast();
+
+  // Experiment 3: global workout actions from WorkoutContext
+  const { addCompletedSet, completeWorkout } = useWorkout();
 
   // useFetch — loads today's plan (simulated API call) before rendering the exercise cards.
   const { data: plan, loading } = useFetch(fetchWorkoutPlan, []);
@@ -25,7 +29,12 @@ export default function Workout() {
 
   function toggleSet(exerciseId, index, defaultDone) {
     const key = `${exerciseId}-${index}`;
-    setSetOverrides((prev) => ({ ...prev, [key]: !isDone(exerciseId, index, defaultDone) }));
+    const wasDone = isDone(exerciseId, index, defaultDone);
+    setSetOverrides((prev) => ({ ...prev, [key]: !wasDone }));
+    // Experiment 3: when a set transitions to done, increment the global completed sets
+    if (!wasDone) {
+      addCompletedSet();
+    }
   }
 
   function handleStart() {
@@ -44,6 +53,8 @@ export default function Workout() {
   function handleFinish() {
     const total = (plan?.length || 0) + extraExercises.length;
     setSessionStatus('done');
+    // Experiment 3: mark workout as completed in global state
+    completeWorkout();
     showToast(`Workout finished — ${total} exercises logged. +40 XP (demo).`);
   }
 

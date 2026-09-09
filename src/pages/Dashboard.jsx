@@ -2,6 +2,7 @@ import { useContext, useEffect } from 'react';
 import Layout from '../components/Layout.jsx';
 import RankRing from '../components/RankRing.jsx';
 import { UserContext } from '../context/UserContext.jsx';
+import { useWorkout } from '../hooks/useWorkout.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { useFetch } from '../hooks/useFetch.js';
 import { fetchDashboardExtras } from '../data/mockApi.js';
@@ -15,6 +16,9 @@ export default function Dashboard() {
   // useContext() — read shared user data directly, no props passed down from App/Layout.
   // Matches the practical's pattern: const user = useContext(UserContext).
   const user = useContext(UserContext);
+
+  // Experiment 3: read global workout state — same state visible in Navbar
+  const { workoutState } = useWorkout();
 
   // useEffect() — perform an action once, when the component loads (empty dependency array).
   useEffect(() => {
@@ -71,6 +75,20 @@ export default function Dashboard() {
             <p className="stat-label">Total Workouts</p>
             <p className="stat-value mt-2">{user.workouts}</p>
             <p className="mt-1 text-xs text-mist-400">Since March 2026</p>
+          </div>
+        </div>
+
+        {/* ===== Workout Progress (Experiment 3: global state from WorkoutContext) ===== */}
+        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="card">
+            <p className="stat-label">Completed Sets</p>
+            <p className="stat-value mt-2 text-volt-400">{workoutState.completedSets}</p>
+            <p className="mt-1 text-xs text-mist-400">Across all sessions</p>
+          </div>
+          <div className="card">
+            <p className="stat-label">Completed Workouts</p>
+            <p className="stat-value mt-2 text-volt-400">{workoutState.completedWorkouts}</p>
+            <p className="mt-1 text-xs text-mist-400">Total finished sessions</p>
           </div>
         </div>
 
