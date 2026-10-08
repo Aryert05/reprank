@@ -2,11 +2,20 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
-// RepRank is still a multi-page site (8 separate .html files) — Experiment 2 adds
-// React to each page via the official React plugin, keeping the same multi-entry
-// build so every page ships as its own small React app instead of one big SPA.
+// RepRank is a multi-page app with 8 HTML entries.
+// Experiment 4 adds a Vite development proxy for /api pointing to the Express backend.
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_URL || 'http://localhost:5001',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
   build: {
     rollupOptions: {
       input: {

@@ -1,15 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-// Custom Hook #2 — the classic "fetch data on load" pattern:
-// component loads -> useEffect -> call an async function -> store loading/data/error.
-// Reused by Dashboard, Leaderboard and Challenges instead of copy-pasting the same
-// three useState calls and useEffect block into each page.
+// Custom Hook #2 — "fetch data on load" pattern extended for Experiment 4 REST API.
+// Wraps useEffect + useState to handle fetcher execution, loading state, error catching,
+// and provides a refetch callback to refresh data after REST API CRUD operations.
 export function useFetch(fetcher, deps = []) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const executeFetch = useCallback(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -25,13 +24,16 @@ export function useFetch(fetcher, deps = []) {
         if (!cancelled) setLoading(false);
       });
 
-    // Avoids setting state after the component has already unmounted
-    // (e.g. if the user navigates away while the "request" is still in flight).
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
-  return { data, loading, error };
+  useEffect(() => {
+    const cleanup = executeFetch();
+    return cleanup;
+  }, [executeFetch]);
+
+  return { data, loading, error, refetch: executeFetch, setData };
 }
