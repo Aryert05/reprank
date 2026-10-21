@@ -11,6 +11,8 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5002;
+// Bind to all interfaces so the app is reachable from outside a container
+const HOST = process.env.HOST || '0.0.0.0';
 
 // ── Security & parsing middleware ────────────────────────────────────────────
 app.use(helmet());
@@ -19,6 +21,21 @@ app.use(express.json());
 
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => res.send('RepRank API is Running'));
+
+// ── Health endpoint (used by the Docker Compose healthcheck) ─────────────────
+// The backend is only considered healthy when MongoDB is actually connected.
+// When the Atlas connection is down the endpoint returns HTTP 503 so the
+// Docker healthcheck fails and the container is reported as unhealthy.
+app.get('/api/health', (req, res) => {
+  const database = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  const healthy = database === 'connected';
+
+  res.status(healthy ? 200 : 503).json({
+    status: healthy ? 'ok' : 'degraded',
+    database,
+  });
+});
+
 app.use('/api/workouts', workoutRoutes);
 app.use('/api/users', userRoutes);
 
@@ -62,7 +79,7 @@ const startServer = async () => {
   try {
     await mongoose.connect(mongoUri);
     console.log('MongoDB Connected');
-    app.listen(PORT, () => {
+    app.listen(PORT, HOST, () => {
       console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {

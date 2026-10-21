@@ -1,17 +1,58 @@
+import { useState } from 'react';
 import Layout from '../components/Layout.jsx';
 import ToastViewport from '../components/ToastViewport.jsx';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { useForm } from '../hooks/useForm.js';
 import { useToast } from '../hooks/useToast.js';
+import { loginUser, saveAuthSession } from '../services/auth.js';
+import { useUser } from '../context/UserContext.jsx';
 
 export default function Login() {
   useDocumentTitle('Log in — RepRank');
   const { values, handleChange } = useForm({ email: '', password: '', remember: false });
   const { toasts, showToast } = useToast();
+  const { setUser } = useUser();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    showToast('Demo only — authentication arrives in a later experiment.');
+    setError('');
+
+    if (!values.email || !values.password) {
+      setError('Please enter your email and password.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await loginUser({
+        email: values.email.trim(),
+        password: values.password,
+      });
+
+      const token = result?.token;
+      const user = result?.user || result;
+
+      if (token) {
+        saveAuthSession({ token, user });
+      }
+      if (user) {
+        setUser(user);
+      }
+
+      showToast('Login successful. Redirecting...');
+      // Follow existing app navigation pattern
+      setTimeout(() => {
+        window.location.href = '/dashboard.html';
+      }, 600);
+    } catch (err) {
+      const message = err?.message || 'Login failed. Please check your credentials and try again.';
+      setError(message);
+      showToast(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleForgotPassword(e) {
@@ -29,6 +70,11 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="card space-y-5" noValidate>
+          {error && (
+            <div className="rounded-lg border border-red-400/40 bg-red-400/10 px-3 py-2 text-sm text-red-200">
+              {error}
+            </div>
+          )}
           <div>
             <label htmlFor="email" className="field-label">Email</label>
             <input
@@ -58,7 +104,9 @@ export default function Login() {
             <label htmlFor="remember" className="text-sm text-mist-300">Keep me logged in</label>
           </div>
 
-          <button type="submit" className="btn-primary w-full">Log in</button>
+          <button type="submit" className="btn-primary w-full" disabled={loading}>
+            {loading ? 'Logging in...' : 'Log in'}
+          </button>
 
           <p className="text-center text-sm text-mist-400">
             Don't have an account?{' '}
@@ -67,7 +115,7 @@ export default function Login() {
         </form>
 
         <p className="mt-6 text-center text-xs text-mist-400">
-          Experiment 3 demo — this form uses a custom useForm hook, but there's still no backend.
+          Authentication powered by the RepRank API (POST /api/users/login).
         </p>
       </main>
 

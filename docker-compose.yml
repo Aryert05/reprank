@@ -1,0 +1,72 @@
+# RepRank — Experiment 7: Dockerize Frontend and Backend
+# MongoDB is NOT containerised: the backend uses the existing MongoDB Atlas cluster.
+
+services:
+  backend:
+    build:
+      context: ./backend
+    image: reprank-backend:exp7
+    container_name: reprank-backend
+    restart: unless-stopped
+    # Secrets are loaded at RUNTIME from the git-ignored local env file.
+    # No secret value is ever written into this file or into any image.
+    # NOTE: `docker compose config` (without --quiet) RESOLVES and prints these
+    # values — always use `docker compose config --quiet` instead.
+    env_file:
+      - path: ./backend/.env
+        required: true
+    environment:
+      PORT: "5002"
+      HOST: "0.0.0.0"
+    ports:
+      # Host port is configurable only to avoid a host conflict; the container
+      # always listens on 5002 (the Vite proxy target is backend:5002).
+      - "${BACKEND_HOST_PORT:-5002}:5002"
+    healthcheck:
+      # Uses the real health endpoint (GET /api/health).
+      # The endpoint returns 503 unless MongoDB is actually connected, so this
+      # check only passes when the Atlas connection is genuinely up.
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:5002/api/health').then(async(r)=>{const b=await r.json().catch(()=>({}));process.exit(r.ok&&b.database==='connected'?0:1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  frontend:
+    build:
+      context: .
+    image: reprank-frontend:exp7
+    container_name: reprank-frontend
+    restart: unless-stopped
+    environment:
+      # Vite dev proxy target. Inside the Compose network the backend is
+      # reachable as the service name "backend" on its internal port 5002.
+      VITE_API_URL: "http://backend:5002"
+    ports:
+      - "8080:5173"
+    depends_on:
+      # The frontend is a Vite dev server that serves the static pages on their
+      # own, so it only needs the backend container to have *started*.
+      # Waiting for `service_healthy` here would take the whole UI down
+      # whenever MongoDB Atlas is unreachable — the pages would be served but
+      # the app shell itself would never boot.
+      backend:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:5173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s

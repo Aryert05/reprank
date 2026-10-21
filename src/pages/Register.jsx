@@ -1,20 +1,58 @@
+import { useState } from 'react';
 import Layout from '../components/Layout.jsx';
 import ToastViewport from '../components/ToastViewport.jsx';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { useForm } from '../hooks/useForm.js';
 import { useToast } from '../hooks/useToast.js';
+import { registerUser } from '../services/auth.js';
 
 export default function Register() {
   useDocumentTitle('Create your account — RepRank');
   const { values, handleChange } = useForm({ name: '', email: '', password: '', confirmPassword: '' });
   const { toasts, showToast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const mismatch = values.confirmPassword.length > 0 && values.password !== values.confirmPassword;
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (values.password !== values.confirmPassword) return;
-    showToast('Demo only — account creation arrives once the backend is built.');
+    setError('');
+
+    // Client-side validation before hitting the API
+    if (!values.name.trim() || !values.email.trim() || !values.password) {
+      setError('Please fill in your name, email and password.');
+      return;
+    }
+    if (values.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    if (values.password !== values.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await registerUser({
+        name: values.name.trim(),
+        email: values.email.trim(),
+        password: values.password,
+      });
+
+      showToast('Account created — log in to continue.');
+      // Successful registration navigates to the login page
+      setTimeout(() => {
+        window.location.href = '/login.html';
+      }, 800);
+    } catch (err) {
+      const message = err?.message || 'Registration failed. Please try again.';
+      setError(message);
+      showToast(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -27,6 +65,11 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit} className="card space-y-5" noValidate>
+          {error && (
+            <div className="rounded-lg border border-red-400/40 bg-red-400/10 px-3 py-2 text-sm text-red-200">
+              {error}
+            </div>
+          )}
           <div>
             <label htmlFor="name" className="field-label">Full name</label>
             <input
@@ -60,7 +103,9 @@ export default function Register() {
             {mismatch && <p className="mt-1.5 text-xs text-volt">Passwords don't match yet.</p>}
           </div>
 
-          <button type="submit" className="btn-primary w-full">Register</button>
+          <button type="submit" className="btn-primary w-full" disabled={loading}>
+            {loading ? 'Creating account...' : 'Register'}
+          </button>
 
           <p className="text-center text-sm text-mist-400">
             Already have an account?{' '}
@@ -69,7 +114,7 @@ export default function Register() {
         </form>
 
         <p className="mt-6 text-center text-xs text-mist-400">
-          Experiment 3 demo — this form uses a custom useForm hook, but there's still no backend.
+          Account creation powered by the RepRank API (POST /api/users/register).
         </p>
       </main>
 

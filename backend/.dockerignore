@@ -1,0 +1,9 @@
+# Never ship secrets or local-only artifacts into the image
+**/.env
+**/.env.*
+
+node_modules
+npm-debug.log*
+.DS_Store
+.git
+.gitignore
