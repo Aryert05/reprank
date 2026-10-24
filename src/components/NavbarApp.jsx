@@ -8,6 +8,7 @@ const LINKS = [
   ['/workout.html', 'Workouts', 'workout'],
   ['/challenges.html', 'Challenges', 'challenges'],
   ['/leaderboard.html', 'Leaderboard', 'leaderboard'],
+  ['/chat.html', 'Chat', 'chat'],
 ];
 
 function NavLink({ href, label, active }) {

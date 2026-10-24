@@ -87,8 +87,9 @@ docker compose ps             # check status
 
 The backend is only reported healthy when Atlas is genuinely connected (see
 [Backend health endpoint](#3-backend-health-endpoint)). While Atlas is
-unreachable the backend is fail-closed and restart-loops, and the frontend
-still serves the pages.
+unreachable the backend still starts and serves the pages and real-time chat,
+but its healthcheck stays `unhealthy` (the health endpoint returns `503` /
+`{"status":"degraded"}`), and the frontend keeps serving the pages.
 
 Rebuild after code changes:
 
@@ -238,11 +239,16 @@ Atlas rejected the connection. Check that:
 - your current public IP is allowed in Atlas → Security → Network Access
   (add only your own IP, not `0.0.0.0/0`)
 
-The backend is **fail-closed**: it exits with a non-zero status instead of
-starting with a fallback database. Because of that, an unreachable Atlas shows
-up as a **restart loop** in `docker compose ps` (a rising restart count), and
-the backend health state stays `starting`/`unhealthy` because the container
-keeps exiting before the healthcheck can accumulate failures.
+The backend does **not** exit when Atlas is unreachable. It logs the
+connection error, starts the HTTP server anyway, and keeps the UI and chat
+running while `/api/health` honestly reports `503` / `{"status":"degraded"}`.
+In `docker compose ps` this shows as `Up (unhealthy)` (not a restart loop);
+MongoDB-backed API calls keep failing until Atlas is reachable again. Restart
+the backend container after fixing Atlas so it reconnects:
+
+```bash
+docker compose restart backend
+```
 
 The **frontend keeps serving the pages** throughout — it only waits for the
 backend container to start, not to become healthy.
@@ -266,9 +272,9 @@ after MongoDB Atlas connects, so this usually means the Atlas credentials or
 the IP allowlist are wrong — see above.
 
 > **Note:** the frontend does **not** use `condition: service_healthy`, so this
-> error does not occur in the current configuration. The backend is fail-closed
-> and simply restart-loops (`docker compose ps` shows a rising restart count)
-> until Atlas is reachable, while the frontend keeps serving the pages.
+> error does not occur in the current configuration. The backend stays up but
+> `unhealthy` (`/api/health` → `503`) until Atlas is reachable, while the
+> frontend keeps serving the pages and chat keeps working.
 
 **Port 8080 or 5173 already in use**
 Run `lsof -nP -iTCP:8080 -sTCP:LISTEN` (or `5173`) to find the process, stop
