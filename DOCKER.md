@@ -64,7 +64,7 @@ Browser  ──http://localhost:8080──▶  frontend container (Vite dev serv
 | Service    | Container port | Host port | URL                          |
 | ---------- | -------------- | --------- | ---------------------------- |
 | `frontend` | 5173           | 8080      | <http://localhost:8080>      |
-| `backend`  | 5002           | 5002      | <http://localhost:5002>      |
+| `backend`  | 5002           | 5003      | <http://localhost:5003>      |
 
 The browser only ever calls **relative** `/api/...` paths
 (`src/services/api.js`). Those are proxied by the Vite dev server inside the
@@ -124,7 +124,7 @@ docker compose logs backend | grep -i "MongoDB Connected"
 **3. Backend health endpoint**
 
 ```bash
-curl -i http://localhost:5002/api/health
+curl -i http://localhost:5003/api/health
 # HTTP/1.1 200 OK
 # {"status":"ok","database":"connected"}
 ```
@@ -135,7 +135,7 @@ When the database is unreachable it returns **HTTP 503** with
 as a connectivity check:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:5002/api/health
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:5003/api/health
 # 200 = connected, 503 = not connected
 ```
 
@@ -143,8 +143,8 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:5002/api/health
 
 Open <http://localhost:8080> — the RepRank home page should render. The other
 pages (`/login.html`, `/register.html`, `/dashboard.html`, `/workout.html`,
-`/challenges.html`, `/leaderboard.html`, `/profile.html`) are reachable from
-the navbar.
+`/challenges.html`, `/leaderboard.html`, `/profile.html`, `/chat.html`) are
+reachable from the navbar.
 
 **5. Frontend → backend proxy works (real API request through Vite)**
 
@@ -228,10 +228,11 @@ network only.
 
 ## Troubleshooting
 
-**`EADDRINUSE: address already in use :::5002`**
-Another backend is already running locally. Stop it (`lsof -nP -iTCP:5002
--sTCP:LISTEN`) or change the host-side mapping in `docker-compose.yml` to
-`5003:5002` (the container port stays 5002).
+**`bind: address already in use` on host port 5003 or 8080**
+Another process is using the host port. Find it (`lsof -nP -iTCP:5003
+-sTCP:LISTEN` or `8080`) and stop it, or override the backend host port with
+`BACKEND_HOST_PORT=5004 docker compose up -d`. The container port always
+stays 5002.
 
 **Backend container restarts / `MongoDB Connection Error`**
 Atlas rejected the connection. Check that:

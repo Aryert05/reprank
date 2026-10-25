@@ -1,11 +1,12 @@
-# RepRank — Experiment 7: Dockerize Frontend and Backend
+# RepRank — Experiment 9: Containerize the Full-Stack Application
+# Reuses the Experiment 7 Docker setup (validated, not duplicated).
 # MongoDB is NOT containerised: the backend uses the existing MongoDB Atlas cluster.
 
 services:
   backend:
     build:
       context: ./backend
-    image: reprank-backend:exp7
+    image: reprank-backend:exp9
     container_name: reprank-backend
     restart: unless-stopped
     # Secrets are loaded at RUNTIME from the git-ignored local env file.
@@ -19,9 +20,10 @@ services:
       PORT: "5002"
       HOST: "0.0.0.0"
     ports:
-      # Host port is configurable only to avoid a host conflict; the container
-      # always listens on 5002 (the Vite proxy target is backend:5002).
-      - "${BACKEND_HOST_PORT:-5002}:5002"
+      # Host port 5003 avoids clashing with a locally running backend on 5002;
+      # the container always listens on 5002 (the Vite proxy target is
+      # backend:5002). Override with BACKEND_HOST_PORT if 5003 is taken.
+      - "${BACKEND_HOST_PORT:-5003}:5002"
     healthcheck:
       # Uses the real health endpoint (GET /api/health).
       # The endpoint returns 503 unless MongoDB is actually connected, so this
@@ -41,7 +43,7 @@ services:
   frontend:
     build:
       context: .
-    image: reprank-frontend:exp7
+    image: reprank-frontend:exp9
     container_name: reprank-frontend
     restart: unless-stopped
     environment:
