@@ -15,7 +15,6 @@
   ::selection {
     @apply bg-volt/30 text-mist-100;
   }
-  /* Visible keyboard focus everywhere — buttons, links, inputs */
   a:focus-visible,
   button:focus-visible,
   input:focus-visible,
@@ -26,7 +25,6 @@
 }
 
 @layer components {
-  /* ---------- Buttons ---------- */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-xl bg-volt px-6 py-3
            font-semibold text-ink-950 shadow-[0_8px_20px_-8px_rgba(255,122,26,0.6)]
@@ -43,7 +41,6 @@
            font-medium text-mist-300 transition-colors hover:text-mist-100;
   }
 
-  /* ---------- Surfaces ---------- */
   .card {
     @apply rounded-2xl border border-ink-700 bg-ink-900 p-6 shadow-card;
   }
@@ -51,7 +48,6 @@
     @apply transition-all duration-150 hover:border-ink-600 hover:-translate-y-0.5;
   }
 
-  /* ---------- Data / badges ---------- */
   .stat-value {
     @apply font-mono text-3xl font-semibold text-mist-100;
   }
@@ -69,7 +65,6 @@
     @apply border-surge/30 bg-surge/10 text-surge-400;
   }
 
-  /* ---------- Progress ---------- */
   .progress-track {
     @apply h-2 w-full overflow-hidden rounded-full bg-ink-700;
   }
@@ -77,7 +72,6 @@
     @apply h-full rounded-full bg-volt transition-[width] duration-700 ease-out;
   }
 
-  /* ---------- Form fields ---------- */
   .field-label {
     @apply mb-1.5 block text-sm font-medium text-mist-300;
   }
@@ -86,10 +80,7 @@
            placeholder:text-mist-400 transition-colors focus:border-volt;
   }
 
-  /* ---------- Signature element: Rank Ring ---------- */
-  /* A circular XP-progress ring with the level number at its center.
-     Built with a conic-gradient (no inline SVG needed per instance) —
-     this is the one recurring visual motif tying nav, dashboard and profile together. */
+  /* Signature element: Rank Ring — CSS conic-gradient XP ring, level number centered */
   .rank-ring {
     @apply relative grid place-items-center rounded-full;
     background: conic-gradient(theme('colors.volt.DEFAULT') calc(var(--pct, 0) * 1%), theme('colors.ink.700') 0);

@@ -1,0 +1,18 @@
+# Keep the frontend build context lean and secret-free
+node_modules
+**/node_modules
+
+dist
+**/dist
+
+# The backend is built from its own context (./backend) — not needed here
+backend/
+
+.git
+.gitignore
+.DS_Store
+*.log
+
+# Never copy real env files (keep the example)
+**/.env
+**/.env.*
