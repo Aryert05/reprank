@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: reprank-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_CREATION_SECRET
+        sync: false
+      - key: CLIENT_ORIGINS
+        sync: false

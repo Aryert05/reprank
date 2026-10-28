@@ -1,7 +1,9 @@
 // Experiment 4: Frontend API client service for RepRank REST API backend.
 // Supports full CRUD operations (GET, POST, PUT, DELETE) against /api/workouts.
 
-const API_BASE = '/api/workouts';
+import { apiUrl } from './runtimeConfig.js';
+
+const API_BASE = apiUrl('/api/workouts');
 
 export async function fetchWorkouts() {
   const response = await fetch(API_BASE);

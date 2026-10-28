@@ -1,5 +1,7 @@
 // Authentication API helper (Experiment 7 debug/fix)
-const AUTH_BASE = '/api/users';
+import { apiUrl } from './runtimeConfig.js';
+
+const AUTH_BASE = apiUrl('/api/users');
 
 // Builds the Authorization header for protected endpoints.
 // Returns null when there is no stored session.

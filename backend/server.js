@@ -18,8 +18,12 @@ const PORT = process.env.PORT || 5002;
 const HOST = process.env.HOST || '0.0.0.0';
 
 // ── Security & parsing middleware ────────────────────────────────────────────
+// One origin allow-list shared by the REST API and Socket.IO. Resolved from
+// CLIENT_ORIGINS with local development / Docker defaults; never "*".
+const allowedOrigins = resolveAllowedOrigins();
+
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 // ── Routes ───────────────────────────────────────────────────────────────────
@@ -48,9 +52,6 @@ app.use('/api/users', userRoutes);
 // it through the same-origin `/socket.io/` proxy that Vite already provides
 // for `/api`, so no extra CORS wildcard or second port is needed.
 const httpServer = http.createServer(app);
-
-// The exact browser origins allowed to open a chat connection.
-const allowedOrigins = resolveAllowedOrigins();
 
 const io = new Server(httpServer, {
   path: '/socket.io/',
