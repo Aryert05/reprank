@@ -19,7 +19,7 @@ export default defineConfig({
       // Socket.IO handshake + WebSocket upgrade.
       // `ws: true` is required for the HTTP -> WebSocket upgrade; without it the
       // connection silently stays on long-polling. The prefix already matches the
-      // backend path (/socket.io), so no rewrite is needed.
+      // backend path (/socket.io/), so no rewrite is needed.
       '/socket.io': {
         target: process.env.VITE_API_URL || 'http://localhost:5002',
         changeOrigin: true,

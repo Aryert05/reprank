@@ -2,6 +2,15 @@ import mongoose from 'mongoose';
 
 const workoutSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
+    sessionId: {
+      type: String,
+      trim: true,
+    },
     name: {
       type: String,
       required: [true, 'Workout name is required'],
@@ -38,6 +47,9 @@ const workoutSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+workoutSchema.index({ user: 1, createdAt: -1 });
+workoutSchema.index({ user: 1, sessionId: 1 });
 
 const Workout = mongoose.model('Workout', workoutSchema);
 

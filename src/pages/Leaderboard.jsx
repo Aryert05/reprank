@@ -24,6 +24,7 @@ export default function Leaderboard() {
           <p className="stat-label">Season 3</p>
           <h1 className="mt-1 text-3xl font-semibold text-mist-100">Leaderboard</h1>
           <p className="mt-2 text-mist-400">Ranked by total XP earned this season.</p>
+          <p className="mt-2 text-xs uppercase tracking-wide text-mist-400">Demo data — not persisted to the backend</p>
         </div>
 
         {/* ---- Podium (top 3) ---- */}

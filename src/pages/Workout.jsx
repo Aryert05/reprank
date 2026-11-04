@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Layout from '../components/Layout.jsx';
 import ToastViewport from '../components/ToastViewport.jsx';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
@@ -12,6 +12,15 @@ import {
   updateWorkout as updateApiWorkout,
   deleteWorkout as deleteApiWorkout,
 } from '../services/api.js';
+
+const SESSION_KEY = 'reprank_workout_session';
+
+function createSessionId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `sess_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
 
 export default function Workout() {
   useDocumentTitle('Workout — RepRank');
@@ -35,6 +44,23 @@ export default function Workout() {
   const [setOverrides, setSetOverrides] = useState({}); // key: `${exerciseId}-${setIndex}` -> bool
   const [sessionStatus, setSessionStatus] = useState('not-started'); // 'not-started' | 'in-progress' | 'done'
   const [poolIndex, setPoolIndex] = useState(0);
+  const [sessionId, setSessionId] = useState(null);
+  const [finishing, setFinishing] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SESSION_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.sessionId && parsed?.status === 'in-progress') {
+          setSessionId(parsed.sessionId);
+          setSessionStatus('in-progress');
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Form state for creating a new workout in MongoDB
   const [showAddForm, setShowAddForm] = useState(false);
@@ -65,7 +91,14 @@ export default function Workout() {
 
   function handleStart() {
     if (sessionStatus !== 'not-started') return;
+    const sid = createSessionId();
+    setSessionId(sid);
     setSessionStatus('in-progress');
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ sessionId: sid, status: 'in-progress' }));
+    } catch {
+      // ignore
+    }
     showToast('Workout started — log your sets as you go.');
   }
 
@@ -77,15 +110,21 @@ export default function Workout() {
   }
 
   async function handleFinish() {
+    if (sessionStatus === 'done' || finishing) {
+      showToast('This workout has already been completed.');
+      return;
+    }
+    const sid = sessionId || createSessionId();
+    setSessionId(sid);
     const total = (plan?.length || 0) + extraExercises.length;
-    setSessionStatus('done');
+    setFinishing(true);
 
-    // Experiment 3: mark workout as completed in global state
-    completeWorkout();
-
-    // Experiment 4: Save session summary directly to MongoDB backend (POST /api/workouts)
     try {
-      await createApiWorkout({
+      // Experiment 3: mark workout as completed in global state
+      completeWorkout();
+
+      // Experiment 4: Save session summary directly to MongoDB backend (POST /api/workouts)
+      const res = await createApiWorkout({
         name: 'Push Day Session',
         exercise: 'Completed Routine (' + total + ' exercises)',
         sets: 4,
@@ -93,11 +132,21 @@ export default function Workout() {
         weight: 50,
         category: 'Upper Body',
         completed: true,
+        sessionId: sid,
       });
+      setSessionStatus('done');
+      try {
+        localStorage.removeItem(SESSION_KEY);
+      } catch {
+        // ignore
+      }
       refetchDbWorkouts();
-      showToast(`Workout finished & saved to MongoDB database! +40 XP.`);
+      showToast(res?.created === false ? 'Workout already recorded.' : 'Workout finished and saved.');
     } catch (err) {
-      showToast(`Workout finished (+40 XP). Note: ${err.message}`);
+      setSessionStatus('in-progress');
+      showToast(`Error finishing workout: ${err.message}`);
+    } finally {
+      setFinishing(false);
     }
   }
 
@@ -171,7 +220,7 @@ export default function Workout() {
             {sessionStatus === 'not-started' ? 'Start Workout' : 'Workout In Progress'}
           </button>
           <button onClick={handleAddExercise} className="btn-secondary">+ Add Exercise</button>
-          <button onClick={handleFinish} className="btn-secondary ml-auto">Finish Workout</button>
+          <button onClick={handleFinish} disabled={sessionStatus === 'done'} className="btn-secondary ml-auto disabled:opacity-70">Finish Workout</button>
         </div>
 
         <div className="mt-8 space-y-4">
@@ -225,16 +274,15 @@ export default function Workout() {
               ))}
         </div>
 
-        {/* ================= EXPERIMENT 4: REST API & MONGODB INTEGRATION ================= */}
-        <div className="mt-14 border-t border-ink-700 pt-10">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <span className="badge badge-xp">Experiment 4 · REST API & MongoDB</span>
-              <h2 className="mt-2 text-2xl font-bold text-mist-100">Saved Database Workouts</h2>
-              <p className="mt-1 text-sm text-mist-400">
-                Persistent workouts synchronized with MongoDB Mongoose REST API (`/api/workouts`).
-              </p>
-            </div>
+      {/* ================= WORKOUT HISTORY ================= */}
+      <div className="mt-14 border-t border-ink-700 pt-10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-mist-100">Workout History</h2>
+            <p className="mt-1 text-sm text-mist-400">
+              Your saved workouts and completed sessions.
+            </p>
+          </div>
             <button
               onClick={() => setShowAddForm((prev) => !prev)}
               className="btn-primary shrink-0 text-sm"
@@ -327,7 +375,7 @@ export default function Workout() {
                 <label htmlFor="completed" className="text-sm text-mist-300">Mark as Completed</label>
               </div>
               <div className="pt-2 flex gap-3">
-                <button type="submit" className="btn-primary text-sm">Submit POST /api/workouts</button>
+                <button type="submit" className="btn-primary text-sm">Save Workout</button>
                 <button type="button" onClick={() => setShowAddForm(false)} className="btn-secondary text-sm">Cancel</button>
               </div>
             </form>
@@ -335,22 +383,33 @@ export default function Workout() {
 
           {/* Database Workouts List (GET /api/workouts) */}
           <div className="mt-6 space-y-4">
-            {dbLoading ? (
-              <div className="card text-center py-8">
-                <div className="h-4 w-48 animate-pulse rounded bg-ink-700 mx-auto" />
-                <p className="mt-2 text-sm text-mist-400">Loading database workouts from REST API...</p>
-              </div>
-            ) : dbError ? (
-              <div className="card border-red-500/50 bg-red-500/10 text-center py-6">
-                <p className="text-sm text-red-400 font-semibold">Failed to connect to MongoDB REST API</p>
-                <p className="text-xs text-mist-400 mt-1">{dbError.message}</p>
-              </div>
-            ) : !dbWorkouts || dbWorkouts.length === 0 ? (
-              <div className="card text-center py-8">
-                <p className="text-mist-300">No workouts saved in MongoDB yet.</p>
-                <p className="text-xs text-mist-400 mt-1">Click "+ Add Workout to Database" above to create your first record!</p>
-              </div>
-            ) : (
+          {dbLoading ? (
+            <div className="card text-center py-8">
+              <div className="h-4 w-48 animate-pulse rounded bg-ink-700 mx-auto" />
+              <p className="mt-2 text-sm text-mist-400">Loading workouts...</p>
+            </div>
+          ) : dbError ? (
+            <div className="card border-red-500/50 bg-red-500/10 text-center py-6">
+              <p className="text-sm text-red-400 font-semibold">Failed to load workouts</p>
+              <p className="text-xs text-mist-400 mt-1">
+                {dbError?.code === 'DATABASE_UNAVAILABLE'
+                  ? 'The database is temporarily unavailable. Sign in and try again once it’s back online.'
+                  : dbError?.status === 401
+                    ? 'You need to sign in to view your saved workouts.'
+                    : dbError?.message || 'Request failed.'}
+              </p>
+              {dbError?.status === 401 && (
+                <a href="/login.html" className="btn-secondary mt-4 inline-flex text-sm">
+                  Go to login
+                </a>
+              )}
+            </div>
+          ) : !dbWorkouts || dbWorkouts.length === 0 ? (
+            <div className="card text-center py-8">
+              <p className="text-mist-300">No workouts saved yet.</p>
+              <p className="text-xs text-mist-400 mt-1">Start a workout or add one to build your history.</p>
+            </div>
+          ) : (
               dbWorkouts.map((w) => (
                 <div key={w._id} className="card flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border border-ink-700 hover:border-ink-600 transition-colors">
                   <div>
@@ -364,8 +423,8 @@ export default function Workout() {
                     <p className="mt-1 text-sm text-mist-300">
                       <span className="font-medium text-volt-400">{w.exercise}</span> · {w.sets} sets × {w.reps} reps {w.weight ? `@ ${w.weight} kg` : ''}
                     </p>
-                    <p className="mt-1 text-xs text-mist-400 font-mono">
-                      ID: {w._id} · Created: {new Date(w.createdAt).toLocaleTimeString()}
+                    <p className="mt-1 text-xs text-mist-400">
+                      Created: {new Date(w.createdAt).toLocaleString()}
                     </p>
                   </div>
 
@@ -373,14 +432,12 @@ export default function Workout() {
                     <button
                       onClick={() => handleToggleDbWorkout(w)}
                       className="btn-secondary !py-1.5 !px-3 text-xs"
-                      title="Update workout completed status via PUT /api/workouts/:id"
                     >
                       {w.completed ? 'Mark Pending' : 'Mark Done'}
                     </button>
                     <button
                       onClick={() => handleDeleteDbWorkout(w._id)}
                       className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/20"
-                      title="Delete workout via DELETE /api/workouts/:id"
                     >
                       Delete
                     </button>

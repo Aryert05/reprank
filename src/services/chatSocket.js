@@ -25,7 +25,7 @@ export function getChatSocket() {
 
   socket = io(SOCKET_URL || undefined, {
     // Same-origin when SOCKET_URL is empty; absolute backend URL otherwise.
-    path: '/socket.io',
+    path: '/socket.io/',
     // Prefer a real WebSocket, but fall back to HTTP long-polling if the
     // upgrade cannot be negotiated (some proxies block WebSockets).
     transports: ['websocket', 'polling'],
