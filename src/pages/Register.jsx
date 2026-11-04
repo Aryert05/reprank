@@ -4,7 +4,7 @@ import ToastViewport from '../components/ToastViewport.jsx';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { useForm } from '../hooks/useForm.js';
 import { useToast } from '../hooks/useToast.js';
-import { registerUser } from '../services/auth.js';
+import { getAuthErrorMessage, registerUser } from '../services/auth.js';
 
 export default function Register() {
   useDocumentTitle('Create your account — RepRank');
@@ -47,7 +47,7 @@ export default function Register() {
         window.location.href = '/login.html';
       }, 800);
     } catch (err) {
-      const message = err?.message || 'Registration failed. Please try again.';
+      const message = getAuthErrorMessage(err, 'Registration failed. Please try again.');
       setError(message);
       showToast(message);
     } finally {
@@ -66,7 +66,10 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="card space-y-5" noValidate>
           {error && (
-            <div className="rounded-lg border border-red-400/40 bg-red-400/10 px-3 py-2 text-sm text-red-200">
+            <div
+              role="alert"
+              className="rounded-lg border border-red-400/40 bg-red-400/10 px-3 py-2 text-sm text-red-200"
+            >
               {error}
             </div>
           )}

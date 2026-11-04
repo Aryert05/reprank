@@ -229,7 +229,9 @@ npm ci
 | Root | `npm run preview` | Preview the production build locally. |
 | `backend/` | `npm start` | Start the Express/Socket.IO server. |
 | `backend/` | `npm run dev` | Start the backend with Nodemon. |
-| `backend/` | `npm run seed:admin` | Run the existing admin seeding script. Review its fixed demo values before any real use. |
+| `backend/` | `npm test` | Run focused backend tests for database-unavailable handling, login validation, and demo-account consistency. |
+| `backend/` | `npm run seed:admin` | Seed the fixed local admin demo account. Refuses to run in production. |
+| `backend/` | `npm run seed:demo` | Idempotently seed the fixed local member demo account used by the login page picker. Refuses to run in production. |
 
 ### Backend
 
@@ -244,9 +246,10 @@ npm run dev
 
 Default backend address: `http://localhost:5002`.
 
-`PORT` defaults to `5002`; `HOST` defaults to `0.0.0.0`. When MongoDB is unavailable, the
-server still starts so the pages and chat can run, but database-backed routes fail and the
-health endpoint reports a degraded state.
+`PORT` defaults to `5002`; `HOST` defaults to `0.0.0.0`. Mongoose waits up to
+`MONGO_SERVER_SELECTION_TIMEOUT_MS` (default `8000`) during startup. When MongoDB is
+unavailable, the server still starts so the pages and chat can run, but database-backed REST
+routes return a safe `503` immediately and the health endpoint reports a degraded state.
 
 ### Frontend
 
@@ -271,6 +274,35 @@ npm run build
 npm run preview
 ```
 
+### Local demo login
+
+The login page includes a local-only demo-account picker. It fills the form but still calls the
+normal login API; it never bypasses authentication.
+
+After `backend/.env` points at a reachable database, seed the fixed member account from the
+backend directory:
+
+```bash
+cd backend
+npm run seed:demo
+```
+
+Local demo credentials:
+
+| Field | Value |
+| --- | --- |
+| Role | Member (`user`) |
+| Email | `demo.member@reprank.local` |
+| Password | `RepRankDemo1!` |
+
+The seeding command is idempotent: it updates the matching account instead of creating
+duplicates. It refuses to run when `NODE_ENV=production` and is never executed automatically.
+The picker is visible in Vite development. Set `VITE_ENABLE_DEMO_ACCOUNTS=true` for a preview
+build if the demo picker is explicitly required; production builds hide it by default.
+
+The separate `npm run seed:admin` script seeds a fixed local administrator for API testing. Its
+account is deliberately not shown in the browser demo picker.
+
 ## Environment variables
 
 Never commit real values. The backend template is [`backend/.env.example`](backend/.env.example).
@@ -284,6 +316,7 @@ Never commit real values. The backend template is [`backend/.env.example`](backe
 | `ADMIN_CREATION_SECRET` | Yes for admin creation | Checked through the `X-Admin-Secret` request header by the admin registration route. Secret. |
 | `PORT` | Optional | Backend listening port; defaults to `5002`. Render supplies its own value. |
 | `HOST` | Optional | Bind address; defaults to `0.0.0.0`. Recommended for containers and Render. |
+| `MONGO_SERVER_SELECTION_TIMEOUT_MS` | Optional | Initial Atlas server-selection timeout; defaults to `8000`. |
 | `CLIENT_ORIGINS` | Production | Comma-separated exact browser origins allowed for REST CORS and Socket.IO. Leave unset locally to use the localhost defaults. |
 
 ### Frontend build configuration
@@ -293,6 +326,7 @@ Never commit real values. The backend template is [`backend/.env.example`](backe
 | `VITE_API_BASE_URL` | Split deployment | Public backend origin used by REST requests and, by fallback, Socket.IO. |
 | `VITE_SOCKET_URL` | Optional | Public Socket.IO origin if it differs from the REST origin. |
 | `VITE_API_URL` | Local/Docker proxy only | Vite dev-server proxy target; not a public browser API URL. Docker Compose sets this to the backend service address. |
+| `VITE_ENABLE_DEMO_ACCOUNTS` | Optional | Set to `true` to show the local demo-account picker in a production preview build. It is hidden by default outside Vite development. |
 
 `VITE_*` values are embedded in the browser bundle at build time. They must only contain
 public values such as backend origins, never database URIs or secrets.
@@ -530,8 +564,10 @@ in the current application.
 
 ## Testing and verification
 
-There is currently **no automated test suite** in either package. The CI checks are build,
-dependency, and syntax checks, not integration tests.
+The frontend has no automated component or browser test suite. The backend has focused
+`node:test` tests for database-unavailable handling, login validation middleware, auth route
+ordering without a database, and frontend/backend demo-account consistency. CI still does not
+provide MongoDB integration, Docker, browser, or end-to-end coverage.
 
 Run the available frontend verification:
 
@@ -549,8 +585,11 @@ npm ci
 node --check server.js
 find . -path ./node_modules -prune -o -name '*.js' -type f -print0 \
   | xargs -0 -n1 node --check
-npm test --if-present
+npm test
 ```
+
+The backend tests intentionally do not require MongoDB. Successful login, registration, and
+seeding against Atlas must be verified separately against a reachable database.
 
 Validate Docker configuration and builds:
 
@@ -577,7 +616,8 @@ curl -i -H 'Origin: http://localhost:5173' \
 ```
 
 The backend returns `503` from `/api/health` whenever MongoDB is not connected, even though
-the HTTP process and chat may still be running.
+the HTTP process and chat may still be running. Database-backed REST routes are guarded and
+return `503` with `code: "DATABASE_UNAVAILABLE"` instead of waiting for Mongoose buffering.
 
 ## Security notes
 
@@ -592,14 +632,16 @@ the HTTP process and chat may still be running.
 - Restrict MongoDB Atlas network access and use a least-privilege database user.
 - Rotate any credential that may have been exposed. Do not copy real values into issues,
   screenshots, logs, or documentation.
-- The existing admin seed script contains fixed demo values for local testing. Replace or
-  remove that pattern before using the project as a real service.
+- The demo and admin seed scripts contain fixed local-only credentials. They refuse to run in
+  production and must not be reused for a real service. The member demo password is documented
+  for local login; the admin account is not exposed in the browser picker.
 - Workout REST routes are currently public; add authentication/authorization before treating
   them as protected user data.
 
 ## Known limitations
 
-- No automated unit, integration, or end-to-end test suite exists.
+- Focused backend tests exist, but there are no frontend component, browser, database integration,
+  Docker, or end-to-end tests.
 - Chat messages and presence are in memory only; restarting the backend clears history.
 - Chat usernames are not authenticated.
 - Challenge and leaderboard data are mock data. Challenge joining is client-side only.

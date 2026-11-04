@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useUser } from '../context/UserContext.jsx';
 import { useWorkout } from '../hooks/useWorkout.js';
+import { clearAuthSession } from '../services/auth.js';
 import RankRing from './RankRing.jsx';
 
 const LINKS = [
@@ -35,6 +36,11 @@ export default function NavbarApp({ active = '' }) {
   const { workoutState } = useWorkout();
   const pct = Math.round((user.xp / user.xpToNext) * 100);
 
+  function handleLogout() {
+    clearAuthSession();
+    window.location.href = '/index.html';
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-ink-700 bg-ink-950/90 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -51,18 +57,27 @@ export default function NavbarApp({ active = '' }) {
           ))}
         </div>
 
-        <a href="/profile.html" className="hidden items-center gap-3 md:flex" title="View profile">
-          {/* Experiment 3: workout progress indicator — updates automatically via Context */}
-          <div className="flex items-center gap-2 rounded-lg border border-ink-600 bg-ink-900 px-3 py-1.5 text-xs">
-            <span className="font-mono text-volt-400">{workoutState.completedSets}</span>
-            <span className="text-mist-400">sets</span>
-          </div>
-          <span className="text-right leading-tight">
-            <span className="block text-sm font-semibold text-mist-100">{user.name}</span>
-            <span className="block text-xs font-mono text-volt-400">Level {user.level}</span>
-          </span>
-          <RankRing level={user.level} pct={pct} size="h-10 w-10" labelSize="text-xs" />
-        </a>
+        <div className="hidden items-center gap-3 md:flex">
+          <a href="/profile.html" className="flex items-center gap-3" title="View profile">
+            {/* Experiment 3: workout progress indicator — updates automatically via Context */}
+            <div className="flex items-center gap-2 rounded-lg border border-ink-600 bg-ink-900 px-3 py-1.5 text-xs">
+              <span className="font-mono text-volt-400">{workoutState.completedSets}</span>
+              <span className="text-mist-400">sets</span>
+            </div>
+            <span className="text-right leading-tight">
+              <span className="block text-sm font-semibold text-mist-100">{user.name}</span>
+              <span className="block text-xs font-mono text-volt-400">Level {user.level}</span>
+            </span>
+            <RankRing level={user.level} pct={pct} size="h-10 w-10" labelSize="text-xs" />
+          </a>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-lg border border-ink-600 px-3 py-1.5 text-xs font-medium text-mist-300 hover:text-mist-100"
+          >
+            Log out
+          </button>
+        </div>
 
         <button
           aria-label="Toggle menu"
@@ -99,6 +114,13 @@ export default function NavbarApp({ active = '' }) {
               <span className="text-mist-400">Sets completed:</span>
               <span className="font-mono text-volt-400">{workoutState.completedSets}</span>
             </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="mt-2 w-full rounded-lg border border-ink-600 px-3 py-2 text-left text-sm text-mist-300 hover:text-mist-100"
+            >
+              Log out
+            </button>
           </div>
         </div>
       )}

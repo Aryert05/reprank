@@ -40,7 +40,10 @@ export default function Dashboard() {
           <div>
             <p className="stat-label">Welcome back</p>
             <h1 className="mt-1 text-3xl font-semibold text-mist-100">Welcome, {user.name} 👋</h1>
-            <p className="text-sm text-mist-400">Role: {user.role}</p>
+            <p className="text-sm text-mist-400">
+              Role: {user.role}
+              {user?.email ? ` · ${user.email}` : ''}
+            </p>
           </div>
           <div className="flex items-center gap-4 rounded-2xl border border-ink-700 bg-ink-900 px-5 py-3">
             <RankRing level={user.level} pct={pct} size="h-16 w-16" labelSize="text-lg" />
@@ -64,17 +67,17 @@ export default function Dashboard() {
           <div className="card">
             <p className="stat-label">Level</p>
             <p className="stat-value mt-2">{user.level}</p>
-            <p className="mt-1 text-xs text-mist-400">Top 18% of lifters</p>
+            <p className="mt-1 text-xs text-mist-400">Gamification stats are demo values</p>
           </div>
           <div className="card">
             <p className="stat-label">Workout Streak</p>
             <p className="stat-value mt-2">{user.streak}<span className="text-base font-normal text-mist-400"> days</span></p>
-            <p className="mt-1 text-xs text-mist-400">Best streak: 21 days</p>
+            <p className="mt-1 text-xs text-mist-400">Demo value</p>
           </div>
           <div className="card">
             <p className="stat-label">Total Workouts</p>
             <p className="stat-value mt-2">{user.workouts}</p>
-            <p className="mt-1 text-xs text-mist-400">Since March 2026</p>
+            <p className="mt-1 text-xs text-mist-400">Demo value</p>
           </div>
         </div>
 
@@ -83,12 +86,12 @@ export default function Dashboard() {
           <div className="card">
             <p className="stat-label">Completed Sets</p>
             <p className="stat-value mt-2 text-volt-400">{workoutState.completedSets}</p>
-            <p className="mt-1 text-xs text-mist-400">Across all sessions</p>
+            <p className="mt-1 text-xs text-mist-400">Stored locally in this browser</p>
           </div>
           <div className="card">
             <p className="stat-label">Completed Workouts</p>
             <p className="stat-value mt-2 text-volt-400">{workoutState.completedWorkouts}</p>
-            <p className="mt-1 text-xs text-mist-400">Total finished sessions</p>
+            <p className="mt-1 text-xs text-mist-400">Stored locally in this browser</p>
           </div>
         </div>
 
@@ -98,7 +101,7 @@ export default function Dashboard() {
             <div className="card">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-mist-100">This Week's Workouts</h2>
-                <span className="badge">{loading ? '...' : `${data.weeklyDone.filter(Boolean).length} / 5 goal`}</span>
+                <span className="badge">{loading ? '...' : `${data.weeklyDone.filter(Boolean).length} / 5 goal`} · Demo</span>
               </div>
               <div className="mt-5 grid grid-cols-7 gap-2">
                 {DAY_LABELS.map((day, i) => {

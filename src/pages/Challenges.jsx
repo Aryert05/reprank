@@ -17,20 +17,21 @@ export default function Challenges() {
   function handleJoin(challenge) {
     const alreadyJoined = joinedOverrides[challenge.id] ?? challenge.joined;
     if (alreadyJoined) {
-      showToast("You're already in this one — keep logging progress.");
+      showToast("Demo only: you're already in this one — keep logging progress.");
       return;
     }
     setJoinedOverrides((prev) => ({ ...prev, [challenge.id]: true }));
-    showToast(`Joined "${challenge.name}" — good luck!`);
+    showToast(`Demo only: joined "${challenge.name}" — no backend persistence yet.`);
   }
 
   return (
     <Layout nav="app" active="challenges">
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="max-w-xl">
-          <p className="stat-label">Active challenges</p>
-          <h1 className="mt-1 text-3xl font-semibold text-mist-100">Pick a fight worth winning</h1>
-          <p className="mt-2 text-mist-400">Join a challenge, log the work, and watch your rank move.</p>
+          <p className="stat-label">Compete</p>
+          <h1 className="mt-1 text-3xl font-semibold text-mist-100">Challenges</h1>
+          <p className="mt-2 text-mist-400">Join time-based fitness challenges, track your rank, and earn XP.</p>
+          <p className="mt-2 text-xs uppercase tracking-wide text-mist-400">Demo data — not persisted to the backend</p>
         </div>
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">

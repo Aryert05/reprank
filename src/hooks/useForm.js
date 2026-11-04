@@ -15,9 +15,16 @@ export function useForm(initialValues) {
     }));
   }
 
+  function setField(name, value) {
+    setValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
   function reset() {
     setValues(initialValues);
   }
 
-  return { values, handleChange, reset };
+  return { values, handleChange, setField, reset };
 }

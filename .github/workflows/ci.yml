@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - exp10
+      - fix/reprank-stabilization
   pull_request:
     branches:
       - main

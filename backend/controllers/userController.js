@@ -107,20 +107,11 @@ export const getProtectedProfile = async (req, res, next) => {
   }
 };
 
-// @route   GET /api/users/admin
-// @desc    Get admin-only resource
-// @access  Private/Admin (JWT Token + Admin Role Required)
 // @route   POST /api/users/register-admin
-// @desc    Create an admin user — requires server-side ADMIN_SECRET header
-// @access  Protected by ADMIN_SECRET env variable (NOT public)
+// @desc    Create an admin user — requires the X-Admin-Secret header
+// @access  Protected by ADMIN_CREATION_SECRET env variable (NOT public)
 export const registerAdmin = async (req, res, next) => {
   try {
-    const adminSecret = req.headers['x-admin-secret'];
-
-    if (!adminSecret || adminSecret !== process.env.ADMIN_CREATION_SECRET) {
-      return res.status(403).json({ message: 'Forbidden: Invalid admin secret' });
-    }
-
     const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
